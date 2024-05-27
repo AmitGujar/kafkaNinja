@@ -1,0 +1,19 @@
+- name: Kafka Install
+  hosts: all
+  become: true
+
+  vars_prompt:
+    - name: username
+      prompt: "Enter the username "
+      private: false
+
+    - name: server_properties
+      prompt: "Specify the custom server.properties file (optional) "
+      private: false
+
+    - name: partition_size
+      prompt: "Enter the partition size to create (e.g 2GB) "
+      private: false
+
+  roles:
+    - kafka

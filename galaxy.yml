@@ -1,0 +1,34 @@
+namespace: amitgujar
+
+name: kafkaninja
+
+version: 1.0.0
+
+readme: README.md
+
+authors:
+  - Amit Gujar
+
+description: This collection consists required roles for configuring apache kafka on virtual machines.
+
+license_file: LICENSE
+
+tags:
+  - cloud
+  - tools
+  - linux
+  - infrastructure
+  - kafka
+  - configuration
+
+dependencies: {}
+
+repository: https://github.com/AmitGujar/kafkaNinja
+
+documentation: https://github.com/AmitGujar/kafkaNinja/wiki/Getting-started
+
+homepage: https://github.com/AmitGujar/kafkaNinja
+
+issues: https://github.com/AmitGujar/kafkaNinja/issues
+
+build_ignore: []

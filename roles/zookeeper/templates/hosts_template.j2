@@ -1,0 +1,4 @@
+{% for server_num in range(1, server_count|int + 1) %}
+{{ server_ips[server_num - 1] }}  zookeeper{{ server_num }}
+{{ server_ips[server_num - 1] }}  kafka{{ server_num }}
+{% endfor %}

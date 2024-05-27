@@ -1,0 +1,5 @@
+- name: Kafka Install
+  hosts: remote_servers
+  become: true
+  roles:
+    - kafka

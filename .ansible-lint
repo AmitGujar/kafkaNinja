@@ -1,0 +1,13 @@
+exclude_paths:
+  - ./roles/zookeeper/defaults/main.yml
+  - ./docs/main.yml
+  - ./roles/kafka/defaults/main.yml
+
+skip_list:
+  - var-naming
+  - no-role-prefix
+  - octal-values
+  - truthy
+
+warn_list:
+  - octal-values

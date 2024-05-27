@@ -1,0 +1,6 @@
+---
+servers: 192.168.5.10, 192.168.5.5, 192.168.5.13
+reattempt: false
+username: ubuntu
+zookeeper_properties: files/zookeeper.properties
+server_count: 3

@@ -1,0 +1,10 @@
+{
+  "yaml.schemas": {
+    "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/meta.json": "file:///home/amitdg/Desktop/kafkaNinja/roles/zookeeper/meta/main.yml",
+    "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/ansible.json#/$defs/tasks": "file:///home/amitdg/Desktop/kafkaNinja/roles/zookeeper/tasks/main.yml"
+  },
+  "ansible.python.interpreterPath": "/bin/python3",
+  "files.associations": {
+    "*.yml": "ansible"
+  }
+}

@@ -1,0 +1,139 @@
+- name: Adding file limit config
+  ansible.builtin.shell: set -o pipefail false |
+    echo "* hard nofile 100000
+    * soft nofile 100000" | sudo tee --append /etc/security/limits.conf
+  changed_when: false
+
+- name: Disabling swap
+  ansible.builtin.shell: set -o pipefail false |
+    sysctl vm.swappiness=1
+    echo 'vm.swappiness=1' | tee --append /etc/sysctl.conf
+  changed_when: false
+
+- name: Rebooting for changes
+  ansible.builtin.reboot:
+    msg: "bye lol"
+
+- name: Group change of data
+  ansible.builtin.file:
+    path: /data/zookeeper
+    state: directory
+    recurse: true
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: "0777"
+
+- name: Setting up id's for zookeeper
+  ansible.builtin.shell: set -o pipefail false |
+    echo {{ value }} > /data/zookeeper/myid;
+    chmod 777 /data/zookeeper/myid
+  changed_when: false
+
+- name: Installing dependencies
+  ansible.builtin.apt:
+    pkg:
+      - wget
+      - ca-certificates
+      - zip
+      - net-tools
+      - netcat
+      - openjdk-8-jdk
+    update_cache: true
+
+- name: Formatting ipv4s into list
+  ansible.builtin.set_fact:
+    server_ips: "{{ servers.split(',') }}"
+
+- name: Generate /etc/hosts file
+  ansible.builtin.template:
+    src: hosts_template.j2
+    dest: /tmp/hosts.tmp
+    mode: "0666"
+
+- name: Appending the contents
+  ansible.builtin.shell: set -o pipefail false |
+    cat /tmp/hosts.tmp | tee --append /etc/hosts
+  changed_when: false
+
+- name: Downloading kafka in "{{ username }}"
+  ansible.builtin.get_url:
+    url: https://archive.apache.org/dist/kafka/3.7.0/kafka_2.12-3.7.0.tgz
+    dest: "/home/{{ username }}"
+    mode: "0666"
+    group: "{{ username }}"
+
+- name: Extracting kafka
+  ansible.builtin.shell: |
+    cd /home/"{{ username }}"
+    tar -xzvf kafka_2.12-3.7.0.tgz
+    rm kafka_2.12-3.7.0.tgz
+    mv kafka_2.12-3.7.0 kafka
+  changed_when: false
+
+- name: Recurse permission change of kafka
+  ansible.builtin.file:
+    path: /home/{{ username }}/kafka
+    state: directory
+    recurse: true
+    owner: "{{ username }}"
+    group: "{{ username }}"
+
+- name: Removing old zookeeper.properties
+  ansible.builtin.command:
+    cmd: 'rm /home/"{{ username }}"/kafka/config/zookeeper.properties'
+  changed_when: false
+
+- name: Attaching custom zookeeper properties file
+  ansible.builtin.copy:
+    src: "{{ zookeeper_properties }}"
+    dest: /home/{{ username }}/kafka/config
+    mode: "0666"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+
+- name: Change permissions
+  ansible.builtin.shell:
+    cmd: 'chown -R {{ username }}:{{ username }} /home/{{ username }}/kafka; chown -R {{ username }}:{{ username }} /data'
+  changed_when: false
+
+- name: Setting up systemd
+  ansible.builtin.copy:
+    src: files/zookeeper
+    dest: /etc/init.d
+    mode: "0777"
+    owner: root
+    group: root
+
+- name: Saving config
+  ansible.builtin.command:
+    cmd: "update-rc.d zookeeper defaults"
+  changed_when: false
+
+- name: Starting services
+  ansible.builtin.service:
+    name: zookeeper
+    state: started
+  register: service_status
+
+- name: Docker config
+  ansible.builtin.import_tasks:
+    file: docker.yml
+
+- name: Copy compose on remote
+  ansible.builtin.copy:
+    src: files/docker-compose.yml
+    dest: /home/{{ username }}
+    mode: "0444"
+
+- name: Zoonavigator
+  community.docker.docker_compose_v2:
+    project_src: "/home/{{ username }}"
+    state: present
+  register: output
+
+- name: Zoonavigator status
+  ansible.builtin.debug:
+    var: output
+
+- name: Finishing up....
+  ansible.builtin.meta: end_play

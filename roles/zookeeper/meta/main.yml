@@ -1,0 +1,16 @@
+galaxy_info:
+  author: AmitGujar
+  description: This role will install zookeeper on remote servers
+  company: Nice Company
+
+  issue_tracker_url: http://github.com/AmitGujar/kafkaNinja/issues/new
+
+  license: MIT
+
+  min_ansible_version: ">=2.10"
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+        - jammy

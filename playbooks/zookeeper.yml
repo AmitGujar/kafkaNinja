@@ -1,0 +1,23 @@
+- name: Zookeeper Install
+  hosts: all
+  become: true
+
+  vars_prompt:
+    - name: username
+      prompt: "Enter the username "
+      private: false
+
+    - name: servers
+      prompt: "Enter private ipv4s in comma seperated values "
+      private: false
+
+    - name: server_count
+      prompt: "How many servers you want to configure "
+      private: false
+
+    - name: zookeeper.properties
+      prompt: "Specify the location for zookeeper properties (optional) "
+      private: false
+
+  roles:
+    - zookeeper

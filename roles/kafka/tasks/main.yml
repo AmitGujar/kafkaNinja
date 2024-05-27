@@ -1,0 +1,84 @@
+- name: Create partition
+  community.general.parted:
+    device: /dev/xvdf
+    number: 1
+    state: present
+    part_end: "{{ partition_size }}"
+
+- name: Format as xfs
+  community.general.filesystem:
+    fstype: xfs
+    dev: /dev/xvdf
+
+- name: Create kafka directory
+  ansible.builtin.shell: set -o pipefail false |
+    mkdir /data/kafka;
+    chown -R "{{ username }}":"{{ username }}" /data/kafka
+  changed_when: false
+
+- name: Mount volume
+  ansible.posix.mount:
+    path: /data/kafka
+    src: /dev/xvdf
+    fstype: xfs
+    state: mounted
+
+
+- name: Removing old server.properties
+  ansible.builtin.command:
+    cmd: 'rm /home/"{{ username }}"/kafka/config/server.properties'
+  changed_when: false
+
+- name: Attaching custom server properties file
+  ansible.builtin.copy:
+    src: "{{ server_properties }}"
+    dest: /home/{{ username }}/kafka/config
+    mode: "0666"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+
+- name: Replacing broker-id
+  ansible.builtin.lineinfile:
+    path: /home/{{ username }}/kafka/config/server.properties
+    regexp: "^broker.id="
+    line: broker.id={{ value }}
+
+- name: Replacing listener id
+  ansible.builtin.lineinfile:
+    path: /home/{{ username }}/kafka/config/server.properties
+    regexp: "^advertised.listeners="
+    line: advertised.listeners=PLAINTEXT://kafka{{ value }}:9092
+
+- name: Setting up systemd for kafka
+  ansible.builtin.copy:
+    src: files/kafka
+    dest: /etc/init.d
+    mode: "0777"
+    owner: root
+    group: root
+
+- name: Saving config
+  ansible.builtin.command:
+    cmd: "update-rc.d kafka defaults"
+  changed_when: false
+
+- name: Change permissions
+  ansible.builtin.shell:
+    cmd: 'chown -R {{ username }}:{{ username }} /home/{{ username }}/kafka; chown -R {{ username }}:{{ username }} /data/zookeeper'
+  changed_when: false
+
+- name: Recurse permission change of kafka
+  ansible.builtin.file:
+    path: /home/{{ username }}/kafka
+    state: directory
+    recurse: true
+    owner: "{{ username }}"
+    group: "{{ username }}"
+
+- name: Starting services
+  ansible.builtin.service:
+    name: kafka
+    state: reloaded
+
+- name: Finishing up....
+  ansible.builtin.meta: end_play

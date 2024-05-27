@@ -1,0 +1,20 @@
+galaxy_info:
+  author: Amit Gujar
+  description: This role will install apache kafka on remote servers
+  company: Nice company
+
+  license: MIT
+
+  min_ansible_version: ">=2.10"
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+        - jammy
+
+  galaxy_tags:
+    - apachekafka
+    - zookeeper
+    - cloud
+    - configuration

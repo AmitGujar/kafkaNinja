@@ -1,0 +1,4 @@
+username: ubuntu
+skip: true
+partition_size: 2GB
+server_properties: files/server.properties
